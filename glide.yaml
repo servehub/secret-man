@@ -1,0 +1,6 @@
+package: github.com/servehub/secret-man
+import:
+  - package: github.com/servehub/utils
+  - package: gopkg.in/alecthomas/kingpin.v2
+  - package: github.com/hashicorp/consul
+  - package: github.com/go-chi/chi

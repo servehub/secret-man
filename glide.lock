@@ -1,0 +1,67 @@
+hash: 19105a5acf23a7848956fb7c004f736c49844567ce915bc03bc35277c86c1b21
+updated: 2019-09-07T12:31:31.267978+03:00
+imports:
+- name: github.com/alecthomas/template
+  version: fb15b899a75114aa79cc930e33c46b577cc664b1
+  subpackages:
+  - parse
+- name: github.com/alecthomas/units
+  version: c3de453c63f4bdb4dadffab9805ec00426c505f7
+- name: github.com/armon/go-metrics
+  version: 783273d703149aaeb9897cf58613d5af48861c25
+- name: github.com/fatih/color
+  version: 2d684516a8861da43017284349b7e303e809ac21
+- name: github.com/ghodss/yaml
+  version: e9ed3c6dfb39bb1a32197cb10d527906fe4da4b6
+- name: github.com/go-chi/chi
+  version: 063783d4ff01e519755175a21ff821b75e49d3c4
+  subpackages:
+  - middleware
+- name: github.com/go-chi/render
+  version: 3215478343fbc559bd3fc08f7031bb134d6bdad5
+- name: github.com/hashicorp/consul
+  version: 8f663627708764b97d15e96a994e882118f596c4
+  subpackages:
+  - api
+- name: github.com/hashicorp/go-cleanhttp
+  version: d5fe4b57a186c716b0e00b8c301cbd9b4182694d
+- name: github.com/hashicorp/go-immutable-radix
+  version: 7f3cd4390caab3250a57f30efdb2a65dd7649ecf
+- name: github.com/hashicorp/go-rootcerts
+  version: 6bb64b370b90e7ef1fa532be9e591a81c3493e00
+- name: github.com/hashicorp/golang-lru
+  version: 0fb14efe8c47ae851c0034ed7a448854d3d34cf3
+  subpackages:
+  - simplelru
+- name: github.com/hashicorp/serf
+  version: 984a73625de3138f44deb38d00878fab39eb6447
+  subpackages:
+  - coordinate
+- name: github.com/mattn/go-colorable
+  version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
+- name: github.com/mattn/go-isatty
+  version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
+- name: github.com/mitchellh/go-homedir
+  version: 3864e76763d94a6df2f9960b16a20a33da9f9a66
+- name: github.com/servehub/utils
+  version: f550d4369a0fbbcf0c61fe5424f375fdb3ec5139
+  subpackages:
+  - gabs
+  - mergemap
+- name: github.com/youmark/pkcs8
+  version: 70daafe5d78afa9a3f800554adda5fcd74ae07b5
+- name: golang.org/x/crypto
+  version: 9756ffdc24725223350eb3266ffb92590d28f278
+  subpackages:
+  - pbkdf2
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: 6c888cc515d3ed83fc103cf1d84468aad274b0a7
+  subpackages:
+  - unix
+  - windows
+- name: gopkg.in/alecthomas/kingpin.v2
+  version: 947dcec5ba9c011838740e680966fd7087a71d0d
+- name: gopkg.in/yaml.v2
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+testImports: []
