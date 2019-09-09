@@ -28,17 +28,17 @@ import (
 
 var version = "1.0"
 
-
 func main() {
 	secretKeyPath := kingpin.Flag("secret-key", "Path to secret key file").Required().String()
-	listen := kingpin.Flag("listen", "Addr to listen").Default("127.0.0.1:9042").String()
+	consulPath := kingpin.Flag("consul-path", "Path to secrets in Consul KV").Default("services/secrets/").String()
+	listen := kingpin.Flag("listen", "Addr to listen").Default("127.0.0.1:8042").String()
 
 	kingpin.Version(version)
 	kingpin.Parse()
 
-  log.Print("Enter secret key password: ")
-  keyPassword, termErr := terminal.ReadPassword(int(syscall.Stdin))
-  kingpin.FatalIfError(termErr, "Error on read secret key: %v", termErr)
+	log.Print("Enter secret key password: ")
+	keyPassword, termErr := terminal.ReadPassword(int(syscall.Stdin))
+	kingpin.FatalIfError(termErr, "Error on read secret key: %v", termErr)
 
 	privBytes, loadErr := ioutil.ReadFile(*secretKeyPath)
 	kingpin.FatalIfError(loadErr, "Error on load secret key: %v", loadErr)
@@ -65,7 +65,7 @@ func main() {
 
 		log.Printf("Get `%s` secrets", serviceName)
 
-		allSecrets, _, listErr := consul.KV().List("services/test-secrets/", nil)
+		allSecrets, _, listErr := consul.KV().List(*consulPath, nil)
 		kingpin.FatalIfError(listErr, "Error on list all secrets from consul: %v", listErr)
 
 		output := make(map[string]string)
@@ -112,7 +112,6 @@ func main() {
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 	log.Println("secret-man shutdown by", <-ch)
 }
-
 
 func decryptAes(data string, privateKey *rsa.PrivateKey) (string, error) {
 	b64Decoded, _ := base64.StdEncoding.DecodeString(data)
