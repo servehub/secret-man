@@ -30,6 +30,7 @@ var version = "1.0"
 
 func main() {
 	secretKeyPath := kingpin.Flag("secret-key", "Path to secret key file").Required().String()
+	consulAddress := kingpin.Flag("consul-address", "Consul address").Default("127.0.0.1:8500").String()
 	consulPath := kingpin.Flag("consul-path", "Path to secrets in Consul KV").Default("services/secrets/").String()
 	listen := kingpin.Flag("listen", "Addr to listen").Default("127.0.0.1:8042").String()
 
@@ -49,7 +50,7 @@ func main() {
 	kingpin.FatalIfError(parseErr, "Error on parse secret key: %v", parseErr)
 
 	cf := consulApi.DefaultConfig()
-	cf.Address = "inf1.qa.boople.co:8500"
+	cf.Address = *consulAddress
 	consul, consulErr := consulApi.NewClient(cf)
 	kingpin.FatalIfError(consulErr, "Error on connecting to consul: %v", parseErr)
 
