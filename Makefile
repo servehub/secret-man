@@ -8,7 +8,7 @@ export CGO_ENABLED=0
 
 build:
 	@echo "==> Build binaries..."
-	go build -v -ldflags "-s -w -X main.version=${VERSION}" -o ${DEST}/secret-man${SUFFIX} main.go
+	go build -v -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o ${DEST}/secret-man${SUFFIX} main.go
 
 dist:
 	for GOOS in ${TARGET_OS}; do \
