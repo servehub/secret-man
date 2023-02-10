@@ -10,6 +10,9 @@ build:
 	@echo "==> Build binaries..."
 	go build -v -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o ${DEST}/secret-man${SUFFIX} main.go
 
+docker-dist:
+	docker run --rm -v "${PWD}":/go/src -w /go/src -e VERSION golang:1.19 /bin/sh -c 'go mod vendor && make dist'
+
 dist:
 	for GOOS in ${TARGET_OS}; do \
 		for GOARCH in ${TARGET_ARCH}; do \

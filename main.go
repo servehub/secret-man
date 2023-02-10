@@ -1,9 +1,11 @@
 package main
 
 import (
+	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
@@ -54,7 +56,11 @@ func main() {
 	consul, consulErr := consulApi.NewClient(cf)
 	kingpin.FatalIfError(consulErr, "Error on connecting to consul: %v", parseErr)
 
-	log.Printf("secret-man starting on %s...", *listen)
+	if leader, err := consul.Status().Leader(); err != nil || leader == "" {
+		kingpin.Fatalf("Consul leader not found: '%s'. %v", leader, err)
+	}
+
+	log.Printf("secret-man started on %s", *listen)
 
 	r := chi.NewRouter()
 	r.Use(middleware.RealIP)
@@ -62,18 +68,57 @@ func main() {
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
 	r.Get("/secrets/*", func(w http.ResponseWriter, req *http.Request) {
-		serviceName := "/" + chi.URLParam(req, "*")
+		serviceName := chi.URLParam(req, "*")
 
 		log.Printf("Get `%s` secrets", serviceName)
 
+		if pubKeyResp, _, err := consul.KV().Get("services/keys/public/"+serviceName, nil); err != nil {
+			log.Printf("Can't find public key for `%s` service: %v", serviceName, err)
+			w.WriteHeader(http.StatusForbidden)
+			return
+		} else {
+			pubKey := publicKeyObject{}
+			if err := json.Unmarshal(pubKeyResp.Value, &pubKey); err != nil {
+				log.Printf("Can't read public key for `%s` service", serviceName)
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			pubKeyBytes, _ := hex.DecodeString(pubKey.PublicKey)
+
+			if req.URL.Query().Has("signature") {
+				signature, _ := base64.URLEncoding.DecodeString(req.URL.Query().Get("signature"))
+
+				isVerified := ed25519.Verify(pubKeyBytes, []byte(serviceName+req.URL.Query().Get("timestamp")), signature)
+
+				if !isVerified {
+					log.Printf("Signature is not valid for `%s` service", serviceName)
+					w.WriteHeader(http.StatusForbidden)
+					return
+				}
+			} else {
+				// temporary allow get secrets without signature
+				log.Printf("Signature not provided for `%s` service, skip...", serviceName)
+			}
+		}
+
 		allSecrets, _, listErr := consul.KV().List(*consulPath, nil)
-		kingpin.FatalIfError(listErr, "Error on list all secrets from consul: %v", listErr)
+		if listErr != nil {
+			log.Printf("Error on list all secrets from consul: %v", listErr)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
 		output := make(map[string]string)
 
 		for _, item := range allSecrets {
 			jsonData, jsonErr := gabs.ParseJSON(item.Value)
-			kingpin.FatalIfError(jsonErr, "Error on parse json from consul: %v", jsonErr)
+
+			if jsonErr != nil {
+				log.Printf("Error on parse json from consul `%s`: %v", item.Key, jsonErr)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 
 			secrets, _ := jsonData.Path("secrets").ChildrenMap()
 
@@ -82,7 +127,7 @@ func main() {
 					targets, _ := secret.Path("target").Children()
 
 					for _, target := range targets {
-						if strings.HasPrefix(serviceName, fmt.Sprintf("%s", target.Path("app").Data())) {
+						if strings.HasPrefix("/"+serviceName, fmt.Sprintf("%s", target.Path("app").Data())) {
 							output[secretName] = fmt.Sprintf("%s", secret.Path("value").Data())
 							break
 						}
@@ -122,4 +167,8 @@ func decryptAes(data string, privateKey *rsa.PrivateKey) (string, error) {
 	} else {
 		return "", err
 	}
+}
+
+type publicKeyObject struct {
+	PublicKey string `json:"publicKey"`
 }
