@@ -11,11 +11,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	consulApi "github.com/hashicorp/consul/api"
 	"github.com/servehub/utils/gabs"
@@ -79,7 +82,7 @@ func main() {
 		} else {
 			pubKey := publicKeyObject{}
 			if err := json.Unmarshal(pubKeyResp.Value, &pubKey); err != nil {
-				log.Printf("Can't read public key for `%s` service", serviceName)
+				log.Printf("Error: can't read public key for `%s` service", serviceName)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
@@ -88,14 +91,24 @@ func main() {
 
 			if req.URL.Query().Has("signature") {
 				signature, _ := base64.URLEncoding.DecodeString(req.URL.Query().Get("signature"))
+				timestamp := req.URL.Query().Get("timestamp")
 
-				isVerified := ed25519.Verify(pubKeyBytes, []byte(serviceName+req.URL.Query().Get("timestamp")), signature)
+				isVerified := ed25519.Verify(pubKeyBytes, []byte(serviceName+timestamp), signature)
 
 				if !isVerified {
 					log.Printf("Signature is not valid for `%s` service", serviceName)
 					w.WriteHeader(http.StatusForbidden)
 					return
 				}
+
+				timestampMs, _ := strconv.ParseInt(timestamp, 10, 64)
+
+				if math.Abs(float64(time.Now().UnixMilli()-timestampMs)) > 60000 {
+					log.Printf("Signature is expired for `%s` service", serviceName)
+					w.WriteHeader(http.StatusForbidden)
+					return
+				}
+
 			} else {
 				// temporary allow get secrets without signature
 				log.Printf("Signature not provided for `%s` service, skip...", serviceName)
