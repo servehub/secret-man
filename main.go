@@ -75,7 +75,7 @@ func main() {
 
 		log.Printf("Get `%s` secrets", serviceName)
 
-		if pubKeyResp, _, err := consul.KV().Get("services/keys/public/"+serviceName, nil); err != nil {
+		if pubKeyResp, _, err := consul.KV().Get("services/keys/public/"+serviceName, nil); err != nil || pubKeyResp == nil {
 			log.Printf("Can't find public key for `%s` service: %v", serviceName, err)
 			w.WriteHeader(http.StatusForbidden)
 			return
