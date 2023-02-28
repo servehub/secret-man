@@ -6,7 +6,7 @@ require (
 	github.com/go-chi/chi v4.0.3-0.20190906153133-063783d4ff01+incompatible
 	github.com/go-chi/render v1.0.1
 	github.com/hashicorp/consul v1.1.1-0.20180618192535-8f6636277087
-	github.com/servehub/utils v0.0.0-20190408071028-f550d4369a0f
+	github.com/servehub/utils v1.0.3
 	github.com/youmark/pkcs8 v0.0.0-20181201043747-70daafe5d78a
 	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
